@@ -2,6 +2,15 @@
 from pygame import *
 from random import randint
 
+#фоновая музыка
+mixer.init()
+mixer.music.load('music.mp3')
+mixer.music.play()
+
+#подключение звуков
+GOAL_sound = mixer.Sound('GOAL.wav')
+hit_sound = mixer.Sound('HIT.wav')
+
 #шрифты и надписи
 font.init()
 font1 = font.SysFont("Arial", 73)
@@ -40,15 +49,32 @@ class GameSprite(sprite.Sprite):
     def reset(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
  
-#класс главного игрока
-class Player(GameSprite):
+#класс правого игрока
+class Player_right(GameSprite):
     #метод для управления спрайтом стрелками клавиатуры
     def update(self):
         keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x > 5:
-            self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < win_width - 80:
-            self.rect.x += self.speed
+        if keys[K_UP] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < win_height - 105:
+            self.rect.y += self.speed
+
+#класс левого игрока
+class Player_left(GameSprite):
+    #метод для управления спрайтом клавишами клавиатуры
+    def update(self):
+        keys = key.get_pressed()
+        if keys[K_w] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_s] and self.rect.y < win_height - 105:
+            self.rect.y += self.speed
+
+#класс спрайта-мяча
+class Ball(GameSprite):
+  	#движение мяча
+    def update(self):
+        speed_x
+        speed_y
 
 #Создаём окошко
 win_width = 700
@@ -58,16 +84,19 @@ window = display.set_mode((win_width, win_height))
 background = transform.scale(image.load(img_back), (win_width, win_height))
  
 #создаём спрайты
-left_plat = Player(img_plat, 10, 250, 50, 200, 10)
-right_plat = Player(img_plat, 600, 250, 50, 200, 10)
+left_plat = Player_left(img_plat, 0, 150, 30, 100, 10)
+right_plat = Player_right(img_plat, 670, 150, 30, 100, 10)
 
-ball = Player(img_ball, 100, 100, 80, 80, 5)
+ball = Ball(img_ball, 330, 220, 50, 50, 8)
 
 #переменная "игра закончилась": как только там True, в основном цикле перестают работать спрайты
 finish = False
 #Основной цикл игры:
 run = True #флаг сбрасывается кнопкой закрытия окна      
-end_game = False
+end_game = False #окончание игры
+
+speed_x = 7
+speed_y = 7
 
 while run:
     #событие нажатия на кнопку “Закрыть”
@@ -76,15 +105,18 @@ while run:
             run = False
     
     if not finish:
+        ball.rect.x += speed_x 
+        ball.rect.y += speed_y
+        
         #обновляем фон
         window.blit(background,(0,0))
  
         #пишем текст на экране (счётчик)
-        left_score_text = font2.render(str(left_score), 1, (255, 255, 255))
-        window.blit(left_score_text, (200, 10))
+        left_score_text = font2.render(str(left_score), 1, (255, 0, 0))
+        window.blit(left_score_text, (350, 10))
 
-        right_score_text = font2.render(str(right_score), 1, (255, 255, 255))
-        window.blit(right_score_text, (250, 10)) 
+        right_score_text = font2.render(str(right_score), 1, (255, 0, 0))
+        window.blit(right_score_text, (400, 10)) 
 
         #текст вкл/выкл музыка
         window.blit(on_music, (0, 455))
@@ -100,17 +132,55 @@ while run:
         right_plat.reset()
         ball.reset()
 
+        #отбивание мяча от платформ
+        if sprite.collide_rect(left_plat, ball) or sprite.collide_rect(right_plat ,ball): 
+            speed_x *= -1
+            hit_sound.play()
+            #увеличени скорости
+            if speed_x <= 0:
+                speed_x = speed_x + -1
+                speed_y = speed_y + -1
+            else:
+                speed_x = speed_x + 1
+                speed_y = speed_y + 1
+            
+        
+        #отбивание мяча от верхних и нижних стенок
+        if ball.rect.y > win_height - 50 or ball.rect.y < 0:
+            speed_y *= -1
+            hit_sound.play()
+
+        #гол левого
+        if ball.rect.x < 0:
+            left_score = left_score + 1
+            GOAL_sound.play()
+            ball = Ball(img_ball, 330, 220, 50, 50, 8)
+            speed_x = 7
+            speed_y = 7
+
+        #гол правого
+        if ball.rect.x > 700:
+            right_score = right_score + 1
+            GOAL_sound.play()
+            ball = Ball(img_ball, 330, 220, 50, 50, 8)
+            speed_x = 7
+            speed_y = 7
+        
         #условие победы левого игрока
         if left_score == 5:
             end_game = True
-            window.blit(win_left_text, (200, 200))
-            window.blit(win_left_text2, (10, 250))
+            window.blit(win_left_text, (40, 200))
+            window.blit(win_left_text2, (10, 260))
+            speed_x = 0
+            speed_y = 0
 
         #условие победы правого игрока
         if right_score == 5:
             end_game = True
-            window.blit(win_right_text, (200, 200))
-            window.blit(win_right_text2, (10, 250))
+            window.blit(win_right_text, (40, 200))
+            window.blit(win_right_text2, (10, 260))
+            speed_x = 0
+            speed_y = 0
 
         #перезапуск игры
         if end_game == True:
@@ -119,6 +189,9 @@ while run:
                     end_game = False
                     left_score = 0
                     right_score = 0
+                    ball = Ball(img_ball, 330, 220, 50, 50, 8)
+                    speed_x = 7
+                    speed_y = 7
 
         #включение/выключение фоновой музыки
         if e.type == KEYDOWN:
