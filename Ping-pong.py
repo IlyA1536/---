@@ -14,8 +14,8 @@ hit_sound = mixer.Sound('HIT.wav')
 #шрифты и надписи
 font.init()
 font1 = font.SysFont("Arial", 73)
-win_left_text = font1.render('Выёграл левый игрок!', True, (255, 255, 255))
-win_left_text2 = font1.render('SPACE для перезапуска', True, (255, 255, 255))
+win_left_text = font1.render('Выйграл левый игрок!', True, (255, 0, 0))
+win_left_text2 = font1.render('SPACE для перезапуска', True, (255, 0, 0))
 win_right_text = font1.render('Выйграл правый игрок!', True, (180, 0, 0))
 win_right_text2 = font1.render('SPACE для перезапуска', True, (180, 0, 0))
 font2 = font.SysFont("Arial", 20)
@@ -24,8 +24,9 @@ on_music = font2.render('Нажмите O для вкл. музыки', True, (2
 
 #нам нужны такие картинки:
 img_back = "background.jpg"
-img_plat = "platform.png"
 img_ball = "ball.png"
+img_plat_right = 'plat_right.png'
+img_plat_left = 'plat_left.png'
 
 left_score = 0 #счёт левого игрока
 right_score = 0 #счёт правого игрока
@@ -84,8 +85,8 @@ window = display.set_mode((win_width, win_height))
 background = transform.scale(image.load(img_back), (win_width, win_height))
  
 #создаём спрайты
-left_plat = Player_left(img_plat, 0, 150, 30, 100, 10)
-right_plat = Player_right(img_plat, 670, 150, 30, 100, 10)
+left_plat = Player_left(img_plat_left, 0, 150, 30, 100, 10)
+right_plat = Player_right(img_plat_right, 670, 150, 30, 100, 10)
 
 ball = Ball(img_ball, 330, 220, 50, 50, 8)
 
@@ -152,7 +153,7 @@ while run:
 
         #гол левого
         if ball.rect.x < 0:
-            left_score = left_score + 1
+            right_score = right_score + 1
             GOAL_sound.play()
             ball = Ball(img_ball, 330, 220, 50, 50, 8)
             speed_x = 7
@@ -160,7 +161,7 @@ while run:
 
         #гол правого
         if ball.rect.x > 700:
-            right_score = right_score + 1
+            left_score = left_score + 1
             GOAL_sound.play()
             ball = Ball(img_ball, 330, 220, 50, 50, 8)
             speed_x = 7
