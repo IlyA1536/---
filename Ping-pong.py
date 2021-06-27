@@ -156,8 +156,8 @@ while run:
             right_score = right_score + 1
             GOAL_sound.play()
             ball = Ball(img_ball, 330, 220, 50, 50, 8)
-            speed_x = 7
-            speed_y = 7
+            speed_x = -7
+            speed_y = -7
 
         #гол правого
         if ball.rect.x > 700:
